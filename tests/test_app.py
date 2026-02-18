@@ -87,6 +87,24 @@ class TestSignup:
         assert response.status_code == 400
         assert "already signed up" in response.json()["detail"]
 
+    def test_signup_activity_full(self, client):
+        """Signing up should fail when the activity has reached max_participants."""
+        # Fill Math Olympiad Prep (max 12, starts with 2) with 10 more students
+        for i in range(10):
+            resp = client.post(
+                "/activities/Math Olympiad Prep/signup",
+                params={"email": f"student{i}@mergington.edu"},
+            )
+            assert resp.status_code == 200
+
+        # The 13th signup should be rejected
+        response = client.post(
+            "/activities/Math Olympiad Prep/signup",
+            params={"email": "onemore@mergington.edu"},
+        )
+        assert response.status_code == 400
+        assert "maximum" in response.json()["detail"]
+
 
 # ---------- DELETE /activities/{name}/unregister ----------
 
